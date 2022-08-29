@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithProperties;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\BeforeExport;
+use Maatwebsite\Excel\Events\BeforeReopen;
 use Maatwebsite\Excel\Events\BeforeWriting;
 use Maatwebsite\Excel\Factories\WriterFactory;
 use Maatwebsite\Excel\Files\RemoteTemporaryFile;
@@ -136,6 +137,7 @@ class Writer
      */
     public function reopen(TemporaryFile $tempFile, string $writerType)
     {
+        $this->raise(new BeforeReopen($this));
         $reader            = IOFactory::createReader($writerType);
         $this->spreadsheet = $reader->load($tempFile->sync()->getLocalPath());
 
