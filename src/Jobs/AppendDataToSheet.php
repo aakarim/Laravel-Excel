@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Maatwebsite\Excel\Contracts\Writer as ContractsWriter;
 use Maatwebsite\Excel\Files\TemporaryFile;
 use Maatwebsite\Excel\Jobs\Middleware\LocalizeJob;
 use Maatwebsite\Excel\Writer;
@@ -19,9 +20,6 @@ class AppendDataToSheet implements ShouldQueue
      */
     public $data = [];
 
-    /**
-     * @var string
-     */
     public $temporaryFile;
 
     /**
@@ -71,7 +69,7 @@ class AppendDataToSheet implements ShouldQueue
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function handle(Writer $writer)
+    public function handle(ContractsWriter $writer)
     {
         (new LocalizeJob($this->sheetExport))->handle($this, function () use ($writer) {
             $writer = $writer->reopen($this->temporaryFile, $this->writerType);
