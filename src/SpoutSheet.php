@@ -3,6 +3,7 @@
 namespace Maatwebsite\Excel;
 
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
+use Carbon\Carbon;
 use Error;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
@@ -67,6 +68,14 @@ class SpoutSheet implements Sheet
         if (is_object($row)) {
             return json_decode(json_encode($row), true);
         }
+
+        // TODO: move to a separate class for value binding
+        $row = array_map(function ($r) {
+            if ($r instanceof Carbon) {
+                return $r->format('Y-m-d H:i:s');
+            }
+            return $r;
+        }, $row);
 
         return $row;
     }
