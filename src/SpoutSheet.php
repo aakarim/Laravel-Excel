@@ -2,27 +2,27 @@
 
 namespace Maatwebsite\Excel;
 
-use Box\Spout\Reader\ReaderInterface;
+use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Error;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Contracts\Sheet;
 use Maatwebsite\Excel\Helpers\ArrayHelper;
-use Maatwebsite\Excel\Helpers\CellHelper;
 
 class SpoutSheet implements Sheet
 {
-    private array $worksheet;
+    private SpoutBook $worksheet;
+    private int $index;
 
-    public function __construct(array $worksheet)
+    public function __construct(SpoutBook $worksheet, int $index)
     {
         $this->worksheet = $worksheet;
+        $this->index = $index;
     }
 
-    public function appendRows(iterable $rows, Exporter $sheetExport)
+    public function appendRows(iterable $rows, $sheetExport)
     {
         if (method_exists($sheetExport, 'prepareRows')) {
             $rows = $sheetExport->prepareRows($rows);
@@ -41,8 +41,10 @@ class SpoutSheet implements Sheet
                 static::mapArraybleRow($row)
             );
         })->toArray();
-
-        array_push($this->worksheet, ...$rows);
+        $rows = array_map(function($arr) {
+            return WriterEntityFactory::createRowFromArray($arr);
+        }, $rows);
+        array_push($this->worksheet->spreadsheet[$this->index], ...$rows);
     }
 
     /**

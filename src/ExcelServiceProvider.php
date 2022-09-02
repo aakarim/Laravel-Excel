@@ -8,6 +8,7 @@ use Laravel\Lumen\Application as LumenApplication;
 use Maatwebsite\Excel\Cache\CacheManager;
 use Maatwebsite\Excel\Console\ExportMakeCommand;
 use Maatwebsite\Excel\Console\ImportMakeCommand;
+use Maatwebsite\Excel\Contracts\Writer;
 use Maatwebsite\Excel\Files\Filesystem;
 use Maatwebsite\Excel\Files\TemporaryFileFactory;
 use Maatwebsite\Excel\Mixins\DownloadCollection;
@@ -62,6 +63,11 @@ class ExcelServiceProvider extends ServiceProvider
             'excel'
         );
 
+        $this->app->bind(Writer::class, function ($app) {
+            // TODO: set using config
+            return new SpoutWriter($app->make(TemporaryFileFactory::class));
+        });
+        
         $this->app->bind(CacheManager::class, function ($app) {
             return new CacheManager($app);
         });
