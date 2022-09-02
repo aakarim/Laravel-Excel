@@ -64,7 +64,7 @@ class Excel implements Exporter, Importer
      * @param  Filesystem  $filesystem
      */
     public function __construct(
-        Writer $writer,
+        PhpSpreadsheetWriter $writer,
         QueuedWriter $queuedWriter,
         Reader $reader,
         Filesystem $filesystem

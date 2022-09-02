@@ -1,0 +1,73 @@
+<?php
+
+namespace Maatwebsite\Excel;
+
+use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
+use Error;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Contracts\Sheet;
+use Maatwebsite\Excel\Helpers\ArrayHelper;
+
+class SpoutSheet implements Sheet
+{
+    private SpoutBook $worksheet;
+    private int $index;
+
+    public function __construct(SpoutBook $worksheet, int $index)
+    {
+        $this->worksheet = $worksheet;
+        $this->index = $index;
+    }
+
+    public function appendRows(iterable $rows, $sheetExport)
+    {
+        if (method_exists($sheetExport, 'prepareRows')) {
+            $rows = $sheetExport->prepareRows($rows);
+        }
+
+       $rows = (new Collection($rows))->flatMap(function ($row) use ($sheetExport) {
+            if ($sheetExport instanceof WithMapping) {
+                $row = $sheetExport->map($row);
+            }
+
+            if ($sheetExport instanceof WithCustomValueBinder) {
+                throw new Error("spout does not support custom value bindings");
+            }
+
+            return ArrayHelper::ensureMultipleRows(
+                static::mapArraybleRow($row)
+            );
+        })->toArray();
+        $rows = array_map(function($arr) {
+            return WriterEntityFactory::createRowFromArray($arr);
+        }, $rows);
+        array_push($this->worksheet->spreadsheet[$this->index], ...$rows);
+    }
+
+    /**
+     * @param  mixed  $row
+     * @return array
+     */
+    public static function mapArraybleRow($row): array
+    {
+        // When dealing with eloquent models, we'll skip the relations
+        // as we won't be able to display them anyway.
+        if (is_object($row) && method_exists($row, 'attributesToArray')) {
+            return $row->attributesToArray();
+        }
+
+        if ($row instanceof Arrayable) {
+            return $row->toArray();
+        }
+
+        // Convert StdObjects to arrays
+        if (is_object($row)) {
+            return json_decode(json_encode($row), true);
+        }
+
+        return $row;
+    }
+}

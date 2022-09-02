@@ -2,7 +2,7 @@
 
 namespace Maatwebsite\Excel\Events;
 
-use Maatwebsite\Excel\Sheet;
+use Maatwebsite\Excel\PhpSpreadsheetSheet;
 
 class BeforeSheet extends Event
 {
@@ -20,16 +20,16 @@ class BeforeSheet extends Event
      * @param  Sheet  $sheet
      * @param  object  $exportable
      */
-    public function __construct(Sheet $sheet, $exportable)
+    public function __construct(PhpSpreadsheetSheet $sheet, $exportable)
     {
         $this->sheet       = $sheet;
         $this->exportable  = $exportable;
     }
 
     /**
-     * @return Sheet
+     * @return PhpSpreadsheetSheet
      */
-    public function getSheet(): Sheet
+    public function getSheet(): PhpSpreadsheetSheet
     {
         return $this->sheet;
     }

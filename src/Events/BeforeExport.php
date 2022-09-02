@@ -2,7 +2,7 @@
 
 namespace Maatwebsite\Excel\Events;
 
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter as Writer;
 
 class BeforeExport extends Event
 {

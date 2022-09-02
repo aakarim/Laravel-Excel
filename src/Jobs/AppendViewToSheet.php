@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Files\TemporaryFile;
 use Maatwebsite\Excel\Jobs\Middleware\LocalizeJob;
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter as Writer;
 
 class AppendViewToSheet implements ShouldQueue
 {

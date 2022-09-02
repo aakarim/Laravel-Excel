@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithProperties;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Contracts\Sheet;
+use Maatwebsite\Excel\Contracts\Writer;
 use Maatwebsite\Excel\Events\BeforeExport;
 use Maatwebsite\Excel\Events\BeforeWriting;
 use Maatwebsite\Excel\Factories\WriterFactory;
@@ -22,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 /** @mixin Spreadsheet */
-class Writer
+class PhpSpreadsheetWriter implements Writer
 {
     use DelegatedMacroable, HasEventBus;
 
@@ -78,7 +80,7 @@ class Writer
      * @param  object  $export
      * @return $this
      */
-    public function open($export)
+    public function open($export): PhpSpreadsheetWriter
     {
         $this->exportable = $export;
 
@@ -134,7 +136,7 @@ class Writer
      *
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function reopen(TemporaryFile $tempFile, string $writerType)
+    public function reopen(TemporaryFile $tempFile, string $writerType): PhpSpreadsheetWriter
     {
         $reader            = IOFactory::createReader($writerType);
         $this->spreadsheet = $reader->load($tempFile->sync()->getLocalPath());
@@ -187,9 +189,9 @@ class Writer
      *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function addNewSheet(int $sheetIndex = null)
+    public function addNewSheet(int $sheetIndex = null): Sheet
     {
-        return new Sheet($this->spreadsheet->createSheet($sheetIndex));
+        return new PhpSpreadsheetSheet($this->spreadsheet->createSheet($sheetIndex));
     }
 
     /**
@@ -218,9 +220,9 @@ class Writer
      *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function getSheetByIndex(int $sheetIndex)
+    public function getSheetByIndex(int $sheetIndex): Sheet
     {
-        return new Sheet($this->getDelegate()->getSheet($sheetIndex));
+        return new PhpSpreadsheetSheet($this->getDelegate()->getSheet($sheetIndex));
     }
 
     /**

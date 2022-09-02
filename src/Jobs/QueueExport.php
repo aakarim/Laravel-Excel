@@ -7,7 +7,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Files\TemporaryFile;
 use Maatwebsite\Excel\Jobs\Middleware\LocalizeJob;
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter;
 use Throwable;
 
 class QueueExport implements ShouldQueue
@@ -56,7 +56,7 @@ class QueueExport implements ShouldQueue
      *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function handle(Writer $writer)
+    public function handle(PhpSpreadsheetWriter $writer)
     {
         (new LocalizeJob($this->export))->handle($this, function () use ($writer) {
             $writer->open($this->export);

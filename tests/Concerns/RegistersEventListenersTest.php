@@ -8,13 +8,13 @@ use Maatwebsite\Excel\Events\BeforeImport;
 use Maatwebsite\Excel\Events\BeforeSheet;
 use Maatwebsite\Excel\Events\BeforeWriting;
 use Maatwebsite\Excel\Reader;
-use Maatwebsite\Excel\Sheet;
+use Maatwebsite\Excel\PhpSpreadsheetSheet;
 use Maatwebsite\Excel\Tests\Data\Stubs\BeforeExportListener;
 use Maatwebsite\Excel\Tests\Data\Stubs\ExportWithEvents;
 use Maatwebsite\Excel\Tests\Data\Stubs\ExportWithRegistersEventListeners;
 use Maatwebsite\Excel\Tests\Data\Stubs\ImportWithRegistersEventListeners;
 use Maatwebsite\Excel\Tests\TestCase;
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter as Writer;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class RegistersEventListenersTest extends TestCase

@@ -2,7 +2,7 @@
 
 namespace Maatwebsite\Excel\Events;
 
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter;
 
 class AfterReopen extends Event
 {
@@ -20,16 +20,16 @@ class AfterReopen extends Event
      * @param  Writer  $writer
      * @param  object  $exportable
      */
-    public function __construct(Writer $writer, $exportable)
+    public function __construct(PhpSpreadsheetWriter $writer, $exportable)
     {
         $this->writer     = $writer;
         $this->exportable = $exportable;
     }
 
     /**
-     * @return Writer
+     * @return PhpSpreadsheetWriter
      */
-    public function getWriter(): Writer
+    public function getWriter(): PhpSpreadsheetWriter
     {
         return $this->writer;
     }
