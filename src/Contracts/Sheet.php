@@ -1,6 +1,8 @@
 <?php
 namespace Maatwebsite\Excel\Contracts;
 
+use Maatwebsite\Excel\Exporter;
+
 interface Sheet {
-    public function appendRows();
+    public function appendRows(iterable $rows, Exporter $sheetExport);
 }

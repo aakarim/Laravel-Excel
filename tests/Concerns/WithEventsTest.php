@@ -11,14 +11,14 @@ use Maatwebsite\Excel\Events\BeforeSheet;
 use Maatwebsite\Excel\Events\BeforeWriting;
 use Maatwebsite\Excel\Excel;
 use Maatwebsite\Excel\Reader;
-use Maatwebsite\Excel\Sheet;
+use Maatwebsite\Excel\PhpSpreadsheetSheet;
 use Maatwebsite\Excel\Tests\Data\Stubs\BeforeExportListener;
 use Maatwebsite\Excel\Tests\Data\Stubs\CustomConcern;
 use Maatwebsite\Excel\Tests\Data\Stubs\CustomSheetConcern;
 use Maatwebsite\Excel\Tests\Data\Stubs\ExportWithEvents;
 use Maatwebsite\Excel\Tests\Data\Stubs\ImportWithEvents;
 use Maatwebsite\Excel\Tests\TestCase;
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WithEventsTest extends TestCase
@@ -34,25 +34,25 @@ class WithEventsTest extends TestCase
 
         $event->beforeExport = function ($event) use (&$eventsTriggered) {
             $this->assertInstanceOf(BeforeExport::class, $event);
-            $this->assertInstanceOf(Writer::class, $event->getWriter());
+            $this->assertInstanceOf(PhpSpreadsheetWriter::class, $event->getWriter());
             $eventsTriggered++;
         };
 
         $event->beforeWriting = function ($event) use (&$eventsTriggered) {
             $this->assertInstanceOf(BeforeWriting::class, $event);
-            $this->assertInstanceOf(Writer::class, $event->getWriter());
+            $this->assertInstanceOf(PhpSpreadsheetWriter::class, $event->getWriter());
             $eventsTriggered++;
         };
 
         $event->beforeSheet = function ($event) use (&$eventsTriggered) {
             $this->assertInstanceOf(BeforeSheet::class, $event);
-            $this->assertInstanceOf(Sheet::class, $event->getSheet());
+            $this->assertInstanceOf(PhpSpreadsheetSheet::class, $event->getSheet());
             $eventsTriggered++;
         };
 
         $event->afterSheet = function ($event) use (&$eventsTriggered) {
             $this->assertInstanceOf(AfterSheet::class, $event);
-            $this->assertInstanceOf(Sheet::class, $event->getSheet());
+            $this->assertInstanceOf(PhpSpreadsheetSheet::class, $event->getSheet());
             $eventsTriggered++;
         };
 
@@ -83,13 +83,13 @@ class WithEventsTest extends TestCase
 
         $event->beforeSheet = function ($event) use (&$eventsTriggered) {
             $this->assertInstanceOf(BeforeSheet::class, $event);
-            $this->assertInstanceOf(Sheet::class, $event->getSheet());
+            $this->assertInstanceOf(PhpSpreadsheetSheet::class, $event->getSheet());
             $eventsTriggered++;
         };
 
         $event->afterSheet = function ($event) use (&$eventsTriggered) {
             $this->assertInstanceOf(AfterSheet::class, $event);
-            $this->assertInstanceOf(Sheet::class, $event->getSheet());
+            $this->assertInstanceOf(PhpSpreadsheetSheet::class, $event->getSheet());
             $eventsTriggered++;
         };
 
@@ -106,7 +106,7 @@ class WithEventsTest extends TestCase
 
         $event->beforeExport = new BeforeExportListener(function ($event) {
             $this->assertInstanceOf(BeforeExport::class, $event);
-            $this->assertInstanceOf(Writer::class, $event->getWriter());
+            $this->assertInstanceOf(PhpSpreadsheetWriter::class, $event->getWriter());
         });
 
         $this->assertInstanceOf(BinaryFileResponse::class, $event->download('filename.xlsx'));
@@ -123,22 +123,22 @@ class WithEventsTest extends TestCase
         };
 
         $beforeExport = false;
-        Writer::listen(BeforeExport::class, function () use (&$beforeExport) {
+        PhpSpreadsheetWriter::listen(BeforeExport::class, function () use (&$beforeExport) {
             $beforeExport = true;
         });
 
         $beforeWriting = false;
-        Writer::listen(BeforeWriting::class, function () use (&$beforeWriting) {
+        PhpSpreadsheetWriter::listen(BeforeWriting::class, function () use (&$beforeWriting) {
             $beforeWriting = true;
         });
 
         $beforeSheet = false;
-        Sheet::listen(BeforeSheet::class, function () use (&$beforeSheet) {
+        PhpSpreadsheetSheet::listen(BeforeSheet::class, function () use (&$beforeSheet) {
             $beforeSheet = true;
         });
 
         $afterSheet = false;
-        Sheet::listen(AfterSheet::class, function () use (&$afterSheet) {
+        PhpSpreadsheetSheet::listen(AfterSheet::class, function () use (&$afterSheet) {
             $afterSheet = true;
         });
 
@@ -156,7 +156,7 @@ class WithEventsTest extends TestCase
     public function can_have_custom_concern_handlers()
     {
         // Add a custom concern handler for the given concern.
-        Excel::extend(CustomConcern::class, function (CustomConcern $exportable, Writer $writer) {
+        Excel::extend(CustomConcern::class, function (CustomConcern $exportable, PhpSpreadsheetWriter $writer) {
             $writer->getSheetByIndex(0)->append(
                 $exportable->custom()
             );
@@ -197,7 +197,7 @@ class WithEventsTest extends TestCase
     public function can_have_custom_sheet_concern_handlers()
     {
         // Add a custom concern handler for the given concern.
-        Excel::extend(CustomSheetConcern::class, function (CustomSheetConcern $exportable, Sheet $sheet) {
+        Excel::extend(CustomSheetConcern::class, function (CustomSheetConcern $exportable, PhpSpreadsheetSheet $sheet) {
             $sheet->append(
                 $exportable->custom()
             );

@@ -41,7 +41,7 @@ class QueuedWriter
      * @param  Writer  $writer
      * @param  TemporaryFileFactory  $temporaryFileFactory
      */
-    public function __construct(Writer $writer, TemporaryFileFactory $temporaryFileFactory)
+    public function __construct(PhpSpreadsheetWriter $writer, TemporaryFileFactory $temporaryFileFactory)
     {
         $this->writer               = $writer;
         $this->chunkSize            = config('excel.exports.chunk_size', 1000);

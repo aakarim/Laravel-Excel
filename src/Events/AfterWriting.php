@@ -2,7 +2,7 @@
 
 namespace Maatwebsite\Excel\Events;
 
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetWriter;
 
 class AfterWriting extends Event
 {
@@ -20,7 +20,7 @@ class AfterWriting extends Event
      * @param  Writer  $writer
      * @param  string  $path
      */
-    public function __construct(Writer $writer, string $path)
+    public function __construct(PhpSpreadsheetWriter $writer, string $path)
     {
         $this->writer     = $writer;
         $this->path = $path;
@@ -29,7 +29,7 @@ class AfterWriting extends Event
     /**
      * @return Writer
      */
-    public function getWriter(): Writer
+    public function getWriter(): PhpSpreadsheetWriters
     {
         return $this->writer;
     }

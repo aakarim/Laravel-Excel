@@ -7,8 +7,8 @@ use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\BeforeExport;
 use Maatwebsite\Excel\Events\BeforeSheet;
-use Maatwebsite\Excel\Sheet;
-use Maatwebsite\Excel\Writer;
+use Maatwebsite\Excel\PhpSpreadsheetSheet;
+use Maatwebsite\Excel\PhpSpreadsheetWriter as Writer;
 use PhpOffice\PhpSpreadsheet\Document\Properties;
 
 class DelegatedMacroableTest extends TestCase

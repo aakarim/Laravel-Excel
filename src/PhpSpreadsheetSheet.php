@@ -37,6 +37,7 @@ use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Contracts\Sheet;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Events\BeforeSheet;
 use Maatwebsite\Excel\Exceptions\ConcernConflictException;
@@ -59,7 +60,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\BaseDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /** @mixin Worksheet */
-class Sheet
+class PhpSpreadsheetSheet implements Sheet
 {
     use DelegatedMacroable, HasEventBus;
 
@@ -96,7 +97,7 @@ class Sheet
     /**
      * @param  Spreadsheet  $spreadsheet
      * @param  string|int  $index
-     * @return Sheet
+     * @return PhpSpreadsheetSheet
      *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws SheetNotFoundException
@@ -113,12 +114,12 @@ class Sheet
     /**
      * @param  Spreadsheet  $spreadsheet
      * @param  int  $index
-     * @return Sheet
+     * @return PhpSpreadsheetSheet
      *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws SheetNotFoundException
      */
-    public static function byIndex(Spreadsheet $spreadsheet, int $index): Sheet
+    public static function byIndex(Spreadsheet $spreadsheet, int $index): PhpSpreadsheetSheet
     {
         if (!isset($spreadsheet->getAllSheets()[$index])) {
             throw SheetNotFoundException::byIndex($index, $spreadsheet->getSheetCount());
@@ -130,11 +131,11 @@ class Sheet
     /**
      * @param  Spreadsheet  $spreadsheet
      * @param  string  $name
-     * @return Sheet
+     * @return PhpSpreadsheetSheet
      *
      * @throws SheetNotFoundException
      */
-    public static function byName(Spreadsheet $spreadsheet, string $name): Sheet
+    public static function byName(Spreadsheet $spreadsheet, string $name): PhpSpreadsheetSheet
     {
         if (!$spreadsheet->sheetNameExists($name)) {
             throw SheetNotFoundException::byName($name);
@@ -558,7 +559,7 @@ class Sheet
 
     /**
      * @param  int  $chunkSize
-     * @return Sheet
+     * @return PhpSpreadsheetSheet
      */
     public function chunkSize(int $chunkSize)
     {
