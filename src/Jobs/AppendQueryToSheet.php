@@ -90,84 +90,91 @@ class AppendQueryToSheet implements ShouldQueue
         (new LocalizeJob($this->sheetExport))->handle($this, function () use ($writer) {
             $blackfire = new \Blackfire\Client();
             $probe = $blackfire->createProbe();
-
-            $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
-            $span = null;
-
-            // Check if we have a parent span (this is the case if we started a transaction earlier)
-            if ($parent !== null) {
-                $context = new \Sentry\Tracing\SpanContext();
-                $context->setOp('exports.queue.reopen');
-                $context->setDescription('Reopening temporary file');
-                $span = $parent->startChild($context);
-
-                // Set the current span to the span we just started
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-            }
             
-            $writer = $writer->reopen($this->temporaryFile, $this->writerType);
-            
-            if ($span !== null) {
-                $span->finish();
+            try {
+
+                $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
+                $span = null;
+    
+                // Check if we have a parent span (this is the case if we started a transaction earlier)
+                if ($parent !== null) {
+                    $context = new \Sentry\Tracing\SpanContext();
+                    $context->setOp('exports.queue.reopen');
+                    $context->setDescription('Reopening temporary file');
+                    $span = $parent->startChild($context);
+    
+                    // Set the current span to the span we just started
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+                }
                 
-                // Restore the current span back to the parent span
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-            }
-            
-            $sheet = $writer->getSheetByIndex($this->sheetIndex);
-            
-            if ($parent !== null) {
-                $context = new \Sentry\Tracing\SpanContext();
-                $context->setOp('exports.queue.query');
-                $context->setDescription('executing db query for rows');
-                $span = $parent->startChild($context);
-
-                // Set the current span to the span we just started
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-            }
-            $query = $this->sheetExport->query()->forPage($this->page, $this->chunkSize);
-            if ($span !== null) {
-                $span->finish();
+                $writer = $writer->reopen($this->temporaryFile, $this->writerType);
                 
-                // Restore the current span back to the parent span
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-            }
-            
-            if ($parent !== null) {
-                $context = new \Sentry\Tracing\SpanContext();
-                $context->setOp('exports.queue.appendRows');
-                $context->setDescription('appending rows to sheet');
-                $span = $parent->startChild($context);
-
-                // Set the current span to the span we just started
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-            }
-            $sheet->appendRows($query->get(), $this->sheetExport);
-            if ($span !== null) {
-                $span->finish();
+                if ($span !== null) {
+                    $span->finish();
+                    
+                    // Restore the current span back to the parent span
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+                }
                 
-                // Restore the current span back to the parent span
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+                $sheet = $writer->getSheetByIndex($this->sheetIndex);
+                
+                if ($parent !== null) {
+                    $context = new \Sentry\Tracing\SpanContext();
+                    $context->setOp('exports.queue.query');
+                    $context->setDescription('executing db query for rows');
+                    $span = $parent->startChild($context);
+    
+                    // Set the current span to the span we just started
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+                }
+                $query = $this->sheetExport->query()->forPage($this->page, $this->chunkSize);
+                if ($span !== null) {
+                    $span->finish();
+                    
+                    // Restore the current span back to the parent span
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+                }
+                
+                if ($parent !== null) {
+                    $context = new \Sentry\Tracing\SpanContext();
+                    $context->setOp('exports.queue.appendRows');
+                    $context->setDescription('appending rows to sheet');
+                    $span = $parent->startChild($context);
+    
+                    // Set the current span to the span we just started
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+                }
+                $sheet->appendRows($query->get(), $this->sheetExport);
+                if ($span !== null) {
+                    $span->finish();
+                    
+                    // Restore the current span back to the parent span
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+                }
+                
+                
+                if ($parent !== null) {
+                    $context = new \Sentry\Tracing\SpanContext();
+                    $context->setOp('exports.queue.write');
+                    $context->setDescription('writing to temporary file');
+                    $span = $parent->startChild($context);
+    
+                    // Set the current span to the span we just started
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
+                }
+                $writer->write($this->sheetExport, $this->temporaryFile, $this->writerType);
+                if ($span !== null) {
+                    $span->finish();
+    
+                    // Restore the current span back to the parent span
+                    \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
+                }
+            } catch (Exception $e) {
+                throw $e;
+            } finally {
+                $profile = $blackfire->endProbe($probe);
+                \Log::info("blackfire profile completed: " . $profile->getUrl());
             }
-            
-            
-            if ($parent !== null) {
-                $context = new \Sentry\Tracing\SpanContext();
-                $context->setOp('exports.queue.write');
-                $context->setDescription('writing to temporary file');
-                $span = $parent->startChild($context);
-
-                // Set the current span to the span we just started
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($span);
-            }
-            $writer->write($this->sheetExport, $this->temporaryFile, $this->writerType);
-            if ($span !== null) {
-                $span->finish();
-
-                // Restore the current span back to the parent span
-                \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
-            }
-            $profile = $blackfire->endProbe($probe);
         });
     }
 }
