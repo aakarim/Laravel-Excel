@@ -88,6 +88,9 @@ class AppendQueryToSheet implements ShouldQueue
     public function handle(Writer $writer)
     {
         (new LocalizeJob($this->sheetExport))->handle($this, function () use ($writer) {
+            $blackfire = new \Blackfire\Client();
+            $probe = $blackfire->createProbe();
+
             $parent = \Sentry\SentrySdk::getCurrentHub()->getSpan();
             $span = null;
 
@@ -164,6 +167,7 @@ class AppendQueryToSheet implements ShouldQueue
                 // Restore the current span back to the parent span
                 \Sentry\SentrySdk::getCurrentHub()->setSpan($parent);
             }
+            $profile = $blackfire->endProbe($probe);
         });
     }
 }
