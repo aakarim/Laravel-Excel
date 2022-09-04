@@ -74,10 +74,10 @@ class SpoutSheet implements Sheet
             if ($r instanceof Carbon) {
                 return $r->format('Y-m-d H:i:s');
             }
-            if ($r instanceof string) {
+            if (is_string($r)) {
                 // TODO: report
                 if (strlen($r) > 32767) {
-                    $r = substr($r, 0, 32767);
+                    $r = substr($r, 0, 32,76);
                 }
             }
             return $r;
