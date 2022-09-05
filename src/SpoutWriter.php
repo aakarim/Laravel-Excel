@@ -4,6 +4,7 @@ namespace Maatwebsite\Excel;
 
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
+use Box\Spout\Writer\XLSX\Writer as XLSXWriter;
 use Maatwebsite\Excel\Contracts\Sheet;
 use Maatwebsite\Excel\Contracts\Writer;
 use Maatwebsite\Excel\Events\BeforeWriting;
@@ -93,8 +94,10 @@ class SpoutWriter implements Writer
         // then append rows using the addition in memory
         // assume that all the sheets have been created already
         foreach ($this->spreadsheet->spreadsheet as $sheetIndex => $sheet) {
-            $writerSheet = $writer->getSheets()[$sheetIndex];
-            $writer->setCurrentSheet($writerSheet);
+            if ($writer instanceof XLSXWriter) {
+                $writerSheet = $writer->getSheets()[$sheetIndex];
+                $writer->setCurrentSheet($writerSheet);
+            }
             
             foreach ($sheet as $row) {
                 $writer->addRow($row);
