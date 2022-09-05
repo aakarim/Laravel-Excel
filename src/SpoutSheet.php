@@ -80,7 +80,7 @@ class SpoutSheet implements Sheet
             if (is_string($r)) {
                 // TODO: report
                 if (strlen($r) > 32767) {
-                    $r = substr($r, 0, 32,76);
+                    $r = substr($r, 0, 32767);
                 }
             }
             return $r;
