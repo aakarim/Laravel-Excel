@@ -45,6 +45,9 @@ class SpoutSheet implements Sheet
         $rows = array_map(function($arr) {
             return WriterEntityFactory::createRowFromArray($arr);
         }, $rows);
+        if (is_null($this->worksheet->spreadsheet[$this->index] ?? null)) {
+            $this->worksheet->spreadsheet[$this->index] = [];
+        }
         array_push($this->worksheet->spreadsheet[$this->index], ...$rows);
     }
 
