@@ -5,6 +5,7 @@ namespace Maatwebsite\Excel;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Box\Spout\Writer\XLSX\Writer as XLSXWriter;
+use Box\Spout\Reader\XSLX\Reader as XLSXReader;
 use Maatwebsite\Excel\Contracts\Sheet;
 use Maatwebsite\Excel\Contracts\Writer;
 use Maatwebsite\Excel\Events\BeforeWriting;
@@ -45,12 +46,41 @@ class SpoutWriter implements Writer
      */
     public function reopen(TemporaryFile $tempFile, string $writerType): SpoutWriter
     {
-        $path = $tempFile->sync()->getLocalPath();
- 
-        $ss = [];
-
-        $this->spreadsheet = new SpoutBook($ss);
+        $this->spreadsheet = new SpoutBook([]);
         return $this;
+    }
+
+    protected function copyFromFile(string $path, $writer)
+    {
+        $reader = ReaderEntityFactory::createReaderFromFile($path);
+        $reader->open($path);
+
+        // copy the existing file over
+        foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
+            // Add sheets in the new file, as we read new sheets in the existing one
+            if ($reader instanceof XLSXReader && $sheetIndex !== 1) {
+                $writer->addNewSheetAndMakeItCurrent();
+            }
+            foreach ($sheet->getRowIterator() as $row) {
+                // ... and copy each row into the new spreadsheet
+                $writer->addRow($row);
+            }
+        }
+        $reader->close();
+    }
+
+    protected function writeSheet($writer)
+    {
+        foreach ($this->spreadsheet->spreadsheet as $sheetIndex => $sheet) {
+            if ($writer instanceof XLSXWriter) {
+                $writerSheet = $writer->getSheets()[$sheetIndex];
+                $writer->setCurrentSheet($writerSheet);
+            }
+
+            foreach ($sheet as $row) {
+                $writer->addRow($row);
+            }
+        }
     }
 
     /**
@@ -69,40 +99,18 @@ class SpoutWriter implements Writer
         $path = $temporaryFile->sync()->getLocalPath();
         $pathParts = pathinfo($path);
 
-        $reader = ReaderEntityFactory::createReaderFromFile($path);
-        $reader->open($path);
-        
         // create new temporary file for the witer 
         // TODO: create a remote file as appropriate
         $writerFilePath = $pathParts['dirname'] . '/' . $pathParts['filename'] . '_writer' . '.' . $pathParts['extension'];
         $tmpWriterFile = new LocalTemporaryFile($writerFilePath);
         $writer = WriterEntityFactory::createWriterFromFile($tmpWriterFile->sync()->getLocalPath());
         $writer->openToFile($tmpWriterFile->sync()->getLocalPath());
-        // copy the existing file over
-        foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
-            // Add sheets in the new file, as we read new sheets in the existing one
-            if ($sheetIndex !== 1) {
-                $writer->addNewSheetAndMakeItCurrent();
-            }
-            foreach ($sheet->getRowIterator() as $row) {
-                // ... and copy each row into the new spreadsheet
-                $writer->addRow($row);
-            }
-        }
-        $reader->close();
+
+        $this->copyFromFile($path, $writer);
 
         // then append rows using the addition in memory
         // assume that all the sheets have been created already
-        foreach ($this->spreadsheet->spreadsheet as $sheetIndex => $sheet) {
-            if ($writer instanceof XLSXWriter) {
-                $writerSheet = $writer->getSheets()[$sheetIndex];
-                $writer->setCurrentSheet($writerSheet);
-            }
-            
-            foreach ($sheet as $row) {
-                $writer->addRow($row);
-            }
-        }
+        $this->writeSheet($writer);
         $writer->close();
         
         // TODO: change when we support local and remote files
