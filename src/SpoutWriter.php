@@ -5,7 +5,6 @@ namespace Maatwebsite\Excel;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Box\Spout\Writer\XLSX\Writer as XLSXWriter;
-use Box\Spout\Reader\XSLX\Reader as XLSXReader;
 use Maatwebsite\Excel\Contracts\Sheet;
 use Maatwebsite\Excel\Contracts\Writer;
 use Maatwebsite\Excel\Events\BeforeWriting;
@@ -58,7 +57,7 @@ class SpoutWriter implements Writer
         // copy the existing file over
         foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
             // Add sheets in the new file, as we read new sheets in the existing one
-            if ($reader instanceof XLSXReader && $sheetIndex !== 1) {
+            if (get_class($reader) === 'Box\Spout\Reader\XLSX\Reader' && $sheetIndex !== 1) {
                 $writer->addNewSheetAndMakeItCurrent();
             }
             foreach ($sheet->getRowIterator() as $row) {
