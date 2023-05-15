@@ -2,6 +2,7 @@
 
 namespace Maatwebsite\Excel;
 
+use Box\Spout\Writer\Common\Creator\Style\StyleBuilder;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Carbon\Carbon;
 use Error;
@@ -43,7 +44,10 @@ class SpoutSheet implements Sheet
             );
         })->toArray();
         $rows = array_map(function($arr) {
-            return WriterEntityFactory::createRowFromArray($arr);
+            $style = (new StyleBuilder())
+                ->setShouldWrapText(false)
+                ->build();
+            return WriterEntityFactory::createRowFromArray($arr, $style);
         }, $rows);
         if (is_null($this->worksheet->spreadsheet[$this->index] ?? null)) {
             $this->worksheet->spreadsheet[$this->index] = [];
